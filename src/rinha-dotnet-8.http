@@ -1,0 +1,6 @@
+@rinha_dotnet_8_HostAddress = http://localhost:5027
+
+GET {{rinha_dotnet_8_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
