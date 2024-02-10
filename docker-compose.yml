@@ -1,0 +1,32 @@
+version: '3.9'
+name: 'rinha-felipebossolani'
+
+services:
+  db:
+    image: postgres:latest
+    container_name: db
+    hostname: db
+    command: 'postgres -c max_connections=1000 -c shared_buffers=128MB -c synchronous_commit=off -c fsync=off -c full_page_writes=off'
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=user
+      - POSTGRES_DB=rinha
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/01_ddl.sql:/docker-entrypoint-initdb.d/01_ddl.sql:ro
+      - ./db/02_dml.sql:/docker-entrypoint-initdb.d/02_dml.sql:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '256MB'
+    networks:
+      - app-network    
+
+networks:
+  app-network:
+volumes:
+  app1:
+  app2:
+
