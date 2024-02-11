@@ -6,6 +6,7 @@ CREATE UNLOGGED TABLE clientes (
 
 CREATE UNLOGGED TABLE transacoes (
     id SERIAL PRIMARY KEY,
+    tipo char(1) NOT NULL,
     valor integer NOT NULL,
     descricao varchar(10) NOT NULL,
     realizada_em timestamp NOT NULL,
