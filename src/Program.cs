@@ -29,7 +29,7 @@ app.MapGet("/clientes/{idCliente}/extrato", async Task<Results<Ok<Extrato>, NotF
 {
     try
     {
-        var extrato = await db.ObtemExtratoAsync(idCliente);
+        var extrato = await db.ObtemExtratoAsync(idCliente, cancellationToken);
         return TypedResults.Ok(extrato);
     }
     catch (ClienteNaoEncontradoException)

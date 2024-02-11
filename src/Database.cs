@@ -12,20 +12,20 @@ public sealed class Database
         _connection.Open();
     }
 
-    public async Task<Extrato> ObtemExtratoAsync(int idCliente)
+    public async Task<Extrato> ObtemExtratoAsync(int idCliente, CancellationToken cancellationToken)
     {
-        var saldo = await ObtemSaldo(idCliente);
-        return new Extrato() { Saldo = saldo, UltimasTransacoes = await ObtemUltimasTransacoesAsync(idCliente) };
+        var saldo = await ObtemSaldo(idCliente, cancellationToken);
+        return new Extrato() { Saldo = saldo, UltimasTransacoes = await ObtemUltimasTransacoesAsync(idCliente, cancellationToken) };
     }
 
-    private async Task<Saldo> ObtemSaldo(int idCliente)
+    private async Task<Saldo> ObtemSaldo(int idCliente, CancellationToken cancellationToken)
     {
-        var sql = "SELECT saldo, limite FROM clientes WHERE idCliente = @idCliente";
+        var sql = "SELECT saldo, limite FROM clientes WHERE id = @id";
 
         using var command = new NpgsqlCommand(sql, _connection);
-        command.Parameters.AddWithValue("idcliente", idCliente);
+        command.Parameters.AddWithValue("id", idCliente);
 
-        using var reader = await command.ExecuteReaderAsync();
+        using var reader = await command.ExecuteReaderAsync(cancellationToken);
 
         if (!await reader.ReadAsync())
             throw new ClienteNaoEncontradoException();
@@ -33,7 +33,7 @@ public sealed class Database
         return new() { Total = reader.GetInt32(0), Limite = reader.GetInt32(1) };
     }
 
-    private async Task<IReadOnlyCollection<Transacao>> ObtemUltimasTransacoesAsync(int idCliente)
+    private async Task<IReadOnlyCollection<Transacao>> ObtemUltimasTransacoesAsync(int idCliente, CancellationToken cancellationToken)
     {
         var result = new List<Transacao>(10);
 
@@ -42,7 +42,7 @@ public sealed class Database
         using var command = new NpgsqlCommand(sql, _connection);
         command.Parameters.AddWithValue("idcliente", idCliente);
 
-        using var reader = await command.ExecuteReaderAsync();
+        using var reader = await command.ExecuteReaderAsync(cancellationToken);
         while(await reader.ReadAsync())
         {
             result.Add(new()
