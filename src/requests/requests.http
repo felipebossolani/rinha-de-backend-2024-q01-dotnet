@@ -1,0 +1,7 @@
+GET http://localhost:9999/clientes/1/extrato
+
+###
+
+GET http://localhost:9999/clientes/6/extrato
+
+###

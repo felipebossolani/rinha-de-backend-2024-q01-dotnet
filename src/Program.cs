@@ -1,9 +1,19 @@
+using Microsoft.AspNetCore.Http.HttpResults;
+using rinha_dotnet_8;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+var connectionString = builder.Configuration.GetConnectionString("rinha");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    Console.Error.WriteLine("No connection string found.");
+    return 1;
+}
+
+builder.Services.AddSingleton<Database>(provider => new Database(connectionString));
 
 var app = builder.Build();
 
@@ -12,33 +22,24 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 }
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
+app.MapGet("/clientes/{idCliente}/extrato", async Task<Results<Ok<Extrato>, NotFound, StatusCodeHttpResult>> (int idCliente, Database db, CancellationToken cancellationToken) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    try
+    {
+        var extrato = await db.ObtemExtratoAsync(idCliente);
+        return TypedResults.Ok(extrato);
+    }
+    catch (ClienteNaoEncontradoException)
+    {
+        return TypedResults.NotFound();
+    }
 })
-.WithName("GetWeatherForecast")
+.WithName("ObtemExtratoCliente")
 .WithOpenApi();
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+return 0;

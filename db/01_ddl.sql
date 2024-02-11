@@ -8,7 +8,7 @@ CREATE UNLOGGED TABLE transacoes (
     id SERIAL PRIMARY KEY,
     valor integer NOT NULL,
     descricao varchar(10) NOT NULL,
-    criadaem timestamp NOT NULL,
+    realizada_em timestamp NOT NULL,
     idcliente integer NOT NULL
 );
 
