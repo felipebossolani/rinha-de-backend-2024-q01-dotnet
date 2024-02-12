@@ -1,10 +1,13 @@
-GET http://localhost:9999/clientes/1/extrato
+@hostname=localhost
+@port=9999
+
+GET http://{{hostname}}:{{port}}/clientes/1/extrato
 
 ###
-GET http://localhost:9999/clientes/6/extrato
+GET http://{{hostname}}:{{port}}/clientes/6/extrato
 
 ###
-POST http://localhost:9999/clientes/1/transacoes
+POST http://{{hostname}}:{{port}}/clientes/1/transacoes
 Content-Type: application/json
 
 {
@@ -14,7 +17,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:9999/clientes/1/transacoes
+POST http://{{hostname}}:{{port}}/clientes/1/transacoes
 Content-Type: application/json
 
 {
@@ -24,7 +27,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:9999/clientes/1/transacoes
+POST http://{{hostname}}:{{port}}/clientes/1/transacoes
 Content-Type: application/json
 
 {
@@ -34,7 +37,7 @@ Content-Type: application/json
 }
 
 ### Descrição > 10
-POST http://localhost:9999/clientes/1/transacoes
+POST http://{{hostname}}:{{port}}/clientes/1/transacoes
 Content-Type: application/json
 
 {
@@ -45,7 +48,7 @@ Content-Type: application/json
 
 
 ### Cliente inexistente
-POST http://localhost:9999/clientes/6/transacoes
+POST http://{{hostname}}:{{port}}/clientes/6/transacoes
 Content-Type: application/json
 
 {
