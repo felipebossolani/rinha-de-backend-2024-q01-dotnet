@@ -1,27 +1,55 @@
 GET http://localhost:9999/clientes/1/extrato
 
 ###
-
 GET http://localhost:9999/clientes/6/extrato
 
 ###
-
 POST http://localhost:9999/clientes/1/transacoes
 Content-Type: application/json
 
 {
-  "valor": 1000,
+  "valor": 10000,
   "tipo" : "c",
-  "descricao" : "Recebimento salário"
+  "descricao" : "Earnings"
 }
 
 ###
-
 POST http://localhost:9999/clientes/1/transacoes
 Content-Type: application/json
 
 {
   "valor": 100,
   "tipo" : "d",
-  "descricao" : "Restaurante"
+  "descricao" : "Lunch"
+}
+
+###
+POST http://localhost:9999/clientes/1/transacoes
+Content-Type: application/json
+
+{
+  "valor": 100000000,
+  "tipo" : "d",
+  "descricao" : "Exp Lunch"
+}
+
+### Descrição > 10
+POST http://localhost:9999/clientes/1/transacoes
+Content-Type: application/json
+
+{
+  "valor": 1000,
+  "tipo" : "d",
+  "descricao" : "Descrição maior que 10"
+}
+
+
+### Cliente inexistente
+POST http://localhost:9999/clientes/6/transacoes
+Content-Type: application/json
+
+{
+  "valor": 10000,
+  "tipo" : "c",
+  "descricao" : "Not exists"
 }

@@ -42,6 +42,11 @@ app.MapGet("/clientes/{idCliente}/extrato", async Task<Results<Ok<Extrato>, NotF
 
 app.MapPost("/clientes/{idCliente}/transacoes", async Task<Results<Ok<TransacaoOK>, NotFound, UnprocessableEntity>> (int idCliente, TransacaoRequest transacaoRequest, Database db, CancellationToken cancellationToken) =>
 {
+    if (string.IsNullOrEmpty(transacaoRequest.Descricao) || transacaoRequest.Descricao.Length > 10)
+        return TypedResults.UnprocessableEntity();
+    if (transacaoRequest.Tipo != 'c' && transacaoRequest.Tipo != 'd')
+        return TypedResults.UnprocessableEntity();
+
     try
     {
         var transacao = new Transacao(transacaoRequest.Valor, transacaoRequest.Tipo, transacaoRequest.Descricao, DateTime.UtcNow); ;
