@@ -6,13 +6,13 @@ public sealed class Database
 {
     private readonly NpgsqlConnection _connection;
 
-    public Database(string connectionString)
+    internal Database(string connectionString)
     {
         _connection = new NpgsqlConnection(connectionString);
         _connection.Open();
     }
 
-    public async Task<Extrato> ObtemExtratoAsync(int idCliente, CancellationToken cancellationToken)
+    internal async Task<Extrato> ObtemExtratoAsync(int idCliente, CancellationToken cancellationToken)
     {
         var saldo = await ObtemSaldo(idCliente, cancellationToken);
         return new Extrato() { Saldo = saldo, UltimasTransacoes = await ObtemUltimasTransacoesAsync(idCliente, cancellationToken) };
@@ -55,10 +55,11 @@ public sealed class Database
         }
         return result;
     }
-}
 
-[Serializable]
-internal class ClienteNaoEncontradoException : Exception
-{
+    internal async Task<TransacaoOK> RealizaTransacao(int idCliente, Transacao transacao, CancellationToken cancellationToken)
+    {
+        var saldo = await ObtemSaldo(idCliente, cancellationToken);
+        return new() { Limite = 1000, Saldo = 1000 };
+    }
 
 }

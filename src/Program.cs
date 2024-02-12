@@ -25,7 +25,7 @@ if (app.Environment.IsDevelopment())
     app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 }
 
-app.MapGet("/clientes/{idCliente}/extrato", async Task<Results<Ok<Extrato>, NotFound, StatusCodeHttpResult>> (int idCliente, Database db, CancellationToken cancellationToken) =>
+app.MapGet("/clientes/{idCliente}/extrato", async Task<Results<Ok<Extrato>, NotFound>> (int idCliente, Database db, CancellationToken cancellationToken) =>
 {
     try
     {
@@ -39,6 +39,24 @@ app.MapGet("/clientes/{idCliente}/extrato", async Task<Results<Ok<Extrato>, NotF
 })
 .WithName("ObtemExtratoCliente")
 .WithOpenApi();
+
+app.MapPost("/clientes/{idCliente}/transacoes", async Task<Results<Ok<TransacaoOK>, NotFound, UnprocessableEntity>> (int idCliente, TransacaoRequest transacaoRequest, Database db, CancellationToken cancellationToken) =>
+{
+    try
+    {
+        var transacao = new Transacao(transacaoRequest.Valor, transacaoRequest.Tipo, transacaoRequest.Descricao, DateTime.UtcNow); ;
+        var result = await db.RealizaTransacao(idCliente, transacao, cancellationToken);
+        return TypedResults.Ok(result);
+    }
+    catch (ClienteNaoEncontradoException)
+    {
+        return TypedResults.NotFound();
+    }
+    catch (LimiteExcedidoException)
+    {
+        return TypedResults.UnprocessableEntity();
+    }    
+});
 
 app.Run();
 

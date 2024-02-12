@@ -5,3 +5,23 @@ GET http://localhost:9999/clientes/1/extrato
 GET http://localhost:9999/clientes/6/extrato
 
 ###
+
+POST http://localhost:9999/clientes/1/transacoes
+Content-Type: application/json
+
+{
+  "valor": 1000,
+  "tipo" : "c",
+  "descricao" : "Recebimento salário"
+}
+
+###
+
+POST http://localhost:9999/clientes/1/transacoes
+Content-Type: application/json
+
+{
+  "valor": 100,
+  "tipo" : "d",
+  "descricao" : "Restaurante"
+}
