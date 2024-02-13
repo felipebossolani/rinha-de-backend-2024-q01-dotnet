@@ -1,6 +1,17 @@
-version: '3.5'
+version: '3.8'
 
 services:
+  api1:
+    image: rinha-de-backend-2024-q01-dotnet
+    container_name: api1
+    hostname: api1
+    ports:
+      - "9999:9999"
+    environment:
+      - ConnectionStrings__rinha=Host=db;Database=rinha;Username=user;Password=password;Pooling=true;Minimum Pool Size=0;Maximum Pool Size=100;
+    networks:
+      - app-network
+
   db:
     image: postgres:latest
     container_name: db
@@ -21,7 +32,7 @@ services:
           cpus: '0.5'
           memory: '256MB'
     networks:
-      - app-network    
+      - app-network
 
 networks:
   app-network:
