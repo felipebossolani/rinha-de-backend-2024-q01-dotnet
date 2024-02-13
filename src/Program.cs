@@ -63,7 +63,9 @@ app.MapPost("/clientes/{idCliente}/transacoes", async Task<Results<Ok<TransacaoO
     {
         return TypedResults.UnprocessableEntity();
     }    
-});
+})
+.WithName("RealizaTransaçãoCliente")
+.WithOpenApi();
 
 app.Run();
 

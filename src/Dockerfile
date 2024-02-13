@@ -1,26 +1,25 @@
-ARG CURL=with
-FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled as base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine3.18 AS base
+USER app
 WORKDIR /app
 ENV ASPNETCORE_URLS http://*:9999
-ENTRYPOINT ["/app/rinhaback2401"]
+EXPOSE 9999
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0-jammy AS build
-RUN apt-get update && apt-get install clang zlib1g-dev curl -y --no-install-recommends
-RUN cd /; ldd /usr/bin/curl | tr -s '[:blank:]' '\n' | grep '^/' \
-    | sort | uniq \
-    | xargs -I % sh -c 'mkdir -p $(dirname deps%); cp % deps%;'
-WORKDIR /app
-COPY ./rinhaback2401.csproj ./
-RUN dotnet restore -r linux-x64 /property:Configuration=Release
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.18 AS build
+WORKDIR /src
+COPY ["rinha-dotnet-8.csproj", "."]
+RUN dotnet restore "./rinha-dotnet-8.csproj"
 COPY . .
-RUN dotnet publish --no-restore -p:ExtraOptimize=true -o out
+WORKDIR "/src/."
+RUN dotnet build "rinha-dotnet-8.csproj" -c Release -o /app/build
 
-FROM base as base_without_curl
-COPY --from=build /app/out .
+FROM build AS publish
+RUN dotnet publish "rinha-dotnet-8.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-FROM base_without_curl as base_with_curl
-COPY --from=build /usr/bin/curl /usr/bin/curl
-COPY --from=build /deps/lib /lib
-COPY --from=build /deps/lib64 /lib64
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "rinha-dotnet-8.dll"]
 
-FROM base_${CURL}_curl
+
+#docker build -t nome-da-imagem .
+#docker run -d -p 9999:9999 rinha-de-backend-2024-q01-dotnet -e "ConnectionStrings__rinha=Host=localhost;Database=rinha;Username=user;Password=password;Pooling=true;Minimum Pool Size=0;Maximum Pool Size=100;
