@@ -1,8 +1,8 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine3.18 AS base
 USER app
 WORKDIR /app
-ENV ASPNETCORE_URLS http://*:9999
-EXPOSE 9999
+ENV ASPNETCORE_URLS http://*:8080
+EXPOSE 8080
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.18 AS build
 WORKDIR /src
