@@ -69,7 +69,8 @@ public sealed class Database
 
         await InsereTransacao(idCliente, transacao, cancellationToken);
 
-        return new() { Limite = 1000, Saldo = 1000 };
+        var novoSaldo = saldo.Total + transacao.Valor;
+        return new() { Limite = Math.Abs(saldo.Limite), Saldo = novoSaldo };
     }
 
     private async Task<int> InsereTransacao(int idCliente, Transacao transacao, CancellationToken cancellationToken)

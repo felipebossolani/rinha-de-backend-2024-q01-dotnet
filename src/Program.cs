@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using rinha_dotnet_8;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,16 +16,18 @@ if (string.IsNullOrWhiteSpace(connectionString))
 
 builder.Services.AddSingleton<Database>(provider => new Database(connectionString));
 
-var app = builder.Build();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+});
 
-// Configure the HTTP request pipeline.
+var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
     app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 }
-
 app.MapGet("/clientes/{idCliente}/extrato", async Task<Results<Ok<Extrato>, NotFound>> (int idCliente, Database db, CancellationToken cancellationToken) =>
 {
     try

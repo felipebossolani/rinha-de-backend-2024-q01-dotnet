@@ -17,7 +17,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: '0.4'
           memory: '200MB'
 
   api2:
@@ -64,7 +64,7 @@ services:
       resources:
         limits:
           cpus: '0.5'
-          memory: '256MB'
+          memory: '500MB'
     networks:
       - app-network
     healthcheck:
