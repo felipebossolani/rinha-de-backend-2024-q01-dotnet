@@ -1,19 +1,14 @@
-﻿using Microsoft.AspNetCore.Http.Timeouts;
-using Npgsql;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Threading;
+﻿using Npgsql;
 
 namespace rinha_dotnet_8;
 
 public sealed class Database
 {
-    private readonly NpgsqlConnection _connection;
+    private readonly string _connectionString = "";
 
     internal Database(string connectionString)
     {
-        _connection = new NpgsqlConnection(connectionString);
-        _connection.Open();
+        _connectionString = connectionString;        
     }
 
     internal async Task<Extrato> ObtemExtratoAsync(int idCliente, CancellationToken cancellationToken)
@@ -26,15 +21,19 @@ public sealed class Database
     {
         var sql = "SELECT saldo, limite FROM clientes WHERE id = @id";
 
-        using var command = new NpgsqlCommand(sql, _connection);
-        command.Parameters.AddWithValue("id", idCliente);
+        await using var dataSource = NpgsqlDataSource.Create(_connectionString);
+        await using (var command = dataSource.CreateCommand(sql))
+        {
+            command.Parameters.AddWithValue("id", idCliente);
 
-        using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+            {
+                if (!await reader.ReadAsync())
+                    throw new ClienteNaoEncontradoException();
 
-        if (!await reader.ReadAsync())
-            throw new ClienteNaoEncontradoException();
-
-        return new() { Total = reader.GetInt32(0), Limite = reader.GetInt32(1) };
+                return new() { Total = reader.GetInt32(0), Limite = reader.GetInt32(1) };
+            }
+        }
     }
 
     private async Task<IReadOnlyCollection<Transacao>> ObtemUltimasTransacoesAsync(int idCliente, CancellationToken cancellationToken)
@@ -43,11 +42,13 @@ public sealed class Database
 
         var sql = "SELECT valor, tipo, descricao, realizada_em  FROM transacoes WHERE idcliente = @idcliente ORDER BY realizada_em DESC LIMIT 10;";
 
-        using var command = new NpgsqlCommand(sql, _connection);
+        await using var dataSource = NpgsqlDataSource.Create(_connectionString);
+        await using var command = dataSource.CreateCommand(sql);
+        
         command.Parameters.AddWithValue("idcliente", idCliente);
 
-        using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        while(await reader.ReadAsync())
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);        
+        while (await reader.ReadAsync())
         {
             result.Add(new()
             {
@@ -84,15 +85,31 @@ public sealed class Database
             WHERE id = @idcliente;
             """;
 
-        using var command = new NpgsqlCommand(sql, _connection);
+        await using var dataSource = NpgsqlDataSource.Create(_connectionString);
+        await using var command = dataSource.CreateCommand(sql);
+            
         command.Parameters.AddWithValue("tipo", transacao.Tipo);
         command.Parameters.AddWithValue("valor", transacao.Valor);
         command.Parameters.AddWithValue("descricao", transacao.Descricao);
         command.Parameters.AddWithValue("realizada_em", transacao.RealizadaEm);
         command.Parameters.AddWithValue("idcliente", idCliente);
 
-        return await command.ExecuteNonQueryAsync(cancellationToken);
+        return await command.ExecuteNonQueryAsync(cancellationToken);        
     }
 
     private bool ExcedeLimite(int valor, int saldo, int limite) => (valor + saldo < limite);
+}
+
+public sealed class DbConfig
+{
+    public int PoolSize
+    {
+        get
+        {
+            if (ConnectionString is null) return 0;
+            var connBuilder = new NpgsqlConnectionStringBuilder(ConnectionString);
+            return !connBuilder.Pooling ? 0 : connBuilder.MaxPoolSize;
+        }
+    }
+    public string? ConnectionString { get; internal set; }
 }
