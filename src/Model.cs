@@ -15,7 +15,7 @@ public record struct TransacaoOK(int Limite, int Saldo);
 public record struct Transacao(int Valor, char Tipo, string Descricao, DateTime RealizadaEm);
 
 //requests
-public record struct TransacaoRequest(int Valor, char Tipo, string Descricao);
+public record struct TransacaoRequest(object Valor, char Tipo, string Descricao);
 
 //Exceptions
 [Serializable]

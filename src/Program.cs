@@ -49,11 +49,13 @@ app.MapPost("/clientes/{idCliente}/transacoes", async Task<Results<Ok<TransacaoO
         return TypedResults.UnprocessableEntity();
     if (transacaoRequest.Tipo != 'c' && transacaoRequest.Tipo != 'd')
         return TypedResults.UnprocessableEntity();
+    if (int.TryParse(transacaoRequest.Valor?.ToString(), out var valor) is false)
+        return TypedResults.UnprocessableEntity();
 
     try
     {
         var sinalTransacao = (transacaoRequest.Tipo == 'd' ? -1 : 1);
-        var valor = transacaoRequest.Valor * sinalTransacao;
+        valor *= sinalTransacao;
         var transacao = new Transacao(valor, transacaoRequest.Tipo, transacaoRequest.Descricao, DateTime.UtcNow);
         var result = await db.RealizaTransacao(idCliente, transacao, cancellationToken);
         return TypedResults.Ok(result);
