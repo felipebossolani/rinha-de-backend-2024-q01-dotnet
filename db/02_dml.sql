@@ -39,7 +39,7 @@ BEGIN
     UPDATE clientes
     SET saldo = saldo + valor_com_sinal
     WHERE id = idcliente AND (valor_com_sinal > 0 OR saldo + valor_com_sinal >= limite)
-    RETURNING saldo, limite INTO saldo_novo, limite_novo;
+    RETURNING saldo, -limite INTO saldo_novo, limite_novo;
   
     IF limite_novo IS NULL THEN --sem limite
         status := -2;
