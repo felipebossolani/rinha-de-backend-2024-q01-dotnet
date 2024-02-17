@@ -54,8 +54,6 @@ app.MapPost("/clientes/{idCliente}/transacoes", async Task<Results<Ok<TransacaoO
 
     try
     {
-        var sinalTransacao = (transacaoRequest.Tipo == 'd' ? -1 : 1);
-        valor *= sinalTransacao;
         var transacao = new Transacao(valor, transacaoRequest.Tipo, transacaoRequest.Descricao, DateTime.UtcNow);
         var result = await db.RealizaTransacao(idCliente, transacao, cancellationToken);
         return TypedResults.Ok(result);

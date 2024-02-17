@@ -21,7 +21,7 @@ POST http://{{hostname}}:{{port}}/clientes/1/transacoes
 Content-Type: application/json
 
 {
-  "valor": 100,
+  "valor": 9999,
   "tipo" : "d",
   "descricao" : "Lunch"
 }

@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using System.Data;
 
 namespace rinha_dotnet_8;
 
@@ -73,19 +74,55 @@ public sealed class Database
 
     internal async Task<TransacaoOK> RealizaTransacao(int idCliente, Transacao transacao, CancellationToken cancellationToken)
     {
+        var sql = @"SELECT * FROM CriarTransacao(@idcliente, @tipo, @valor, @descricao);";
+
+        using var connection = new NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+        try
+        {
+            using var command = new NpgsqlCommand(sql, connection);
+            command.Parameters.AddWithValue("idcliente", idCliente);
+            command.Parameters.AddWithValue("tipo", transacao.Tipo);
+            command.Parameters.AddWithValue("valor", transacao.Valor);
+            command.Parameters.AddWithValue("descricao", transacao.Descricao);
+
+            using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            if (await reader.ReadAsync())
+            {
+                var status = reader.GetInt32(0);
+                if (status == -1)
+                    throw new ClienteNaoEncontradoException();
+                if (status == -2)
+                    throw new LimiteExcedidoException();
+
+                var saldo_novo = reader.GetInt32(1);
+                var limite_novo = reader.GetInt32(2);
+                return new() { Saldo = saldo_novo, Limite = limite_novo };
+            }
+            throw new Exception("A função CriarTransação não retornou valores. O que não deveria ocorrer.");
+        }
+        finally
+        {
+            connection.Close();
+        }
+        /*
         var saldo = await ObtemSaldo(idCliente, cancellationToken);
-
-        if (ExcedeLimite(valor: transacao.Valor, saldo: saldo.Total, limite: -saldo.Limite))
+        
+        if (ExcedeLimite(tipo: transacao.Tipo, valor: transacao.Valor, saldo: saldo.Total, limite: saldo.Limite))
             throw new LimiteExcedidoException();
-
+        
+        transacao.Valor *= (transacao.Tipo.Equals('d') ? -1 : 1);
         await InsereTransacao(idCliente, transacao, cancellationToken);
 
         var novoSaldo = saldo.Total + transacao.Valor;
         return new() { Limite = Math.Abs(saldo.Limite), Saldo = novoSaldo };
+        */
     }
 
-    private async Task<int> InsereTransacao(int idCliente, Transacao transacao, CancellationToken cancellationToken)
+    private async Task<TransacaoOK> InsereTransacao(int idCliente, Transacao transacao, CancellationToken cancellationToken)
     {
+        throw new NotImplementedException();
+        /*
         var sql = """
             INSERT INTO transacoes(tipo, valor, descricao, realizada_em, idcliente)
             VALUES(@tipo, @valor_abs, @descricao, @realizada_em, @idcliente);
@@ -112,8 +149,8 @@ public sealed class Database
         finally
         {
             connection.Close();
-        }
+        }*/
     }
 
-    private bool ExcedeLimite(int valor, int saldo, int limite) => (valor + saldo < limite);
+    private bool ExcedeLimite(char tipo, int valor, int saldo, int limite) => tipo.Equals('d') && (saldo - valor) < -limite;
 }
