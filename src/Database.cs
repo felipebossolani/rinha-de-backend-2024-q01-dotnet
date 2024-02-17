@@ -128,7 +128,6 @@ public sealed class Database : IAsyncDisposable
     internal async Task<Extrato> ObtemExtratoAsync(int idCliente, CancellationToken cancellationToken)
     {
         using var connection = CreateConnection();
-
         var saldo = await ObtemSaldoAsync(idCliente, connection, cancellationToken);
         var ultimasTransacoes = await ObtemUltimasTransacoesAsync(idCliente, connection, cancellationToken);
         return new Extrato() { Saldo = saldo, UltimasTransacoes = ultimasTransacoes };
@@ -169,7 +168,28 @@ public sealed class Database : IAsyncDisposable
 
     internal async Task<TransacaoOK> RealizaTransacao(int idCliente, Transacao transacao, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        using var connection = CreateConnection();
+        await using var command = criarTransacaoCommand.Clone();
+        command.Connection = connection;
+        command.Parameters["idcliente"].Value = idCliente;
+        command.Parameters["tipo"].Value = transacao.Tipo;
+        command.Parameters["valor"].Value = transacao.Valor;
+        command.Parameters["descricao"].Value = transacao.Descricao;
+
+        using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (await reader.ReadAsync())
+        {
+            var status = reader.GetInt32(0);
+            if (status == -1)
+                throw new ClienteNaoEncontradoException();
+            if (status == -2)
+                throw new LimiteExcedidoException();
+
+            var saldo_novo = reader.GetInt32(1);
+            var limite_novo = reader.GetInt32(2);
+            return new() { Saldo = saldo_novo, Limite = limite_novo };
+        }
+        throw new Exception("A função CriarTransação não retornou valores. O que não deveria ocorrer.");
     }
 
     private NpgsqlConnection CreateConnection() => dataSource.OpenConnection();
