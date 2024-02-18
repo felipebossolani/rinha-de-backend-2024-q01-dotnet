@@ -1,2 +1,22 @@
-# rinha-de-backend-2024-q01-dotnet
-Repositório para testar conhecimentos na rinha de backend (https://github.com/zanfranceschi/rinha-de-backend-2024-q1)
+
+# Rinha de Backend - Segunda Edição
+
+Repositório para testar meus conhecimento na [rinha de backend 2ª edição - 2024/Q1](https://github.com/zanfranceschi/rinha-de-backend-2024-q1).
+Fiz meu projeto com a linguagem que tenho mais conhecimento:.net 8
+
+## Stack
+
+- .net 8.0
+- nginx
+- postgresql
+
+## Rodando o projeto
+
+```bash
+docker-compose up -d
+```
+
+## Resultados
+
+![Resultados do gatling](docs/gatling-20240217.png)
+
