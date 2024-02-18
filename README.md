@@ -2,7 +2,7 @@
 # Rinha de Backend - Segunda Edição
 
 Repositório para testar meus conhecimento na [rinha de backend 2ª edição - 2024/Q1](https://github.com/zanfranceschi/rinha-de-backend-2024-q1).
-Fiz meu projeto com a linguagem que tenho mais conhecimento:.net 8
+Fiz meu projeto com a linguagem que tenho mais conhecimento: .net 8
 
 ## Stack
 
