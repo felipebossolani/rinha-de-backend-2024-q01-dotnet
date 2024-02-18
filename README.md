@@ -8,7 +8,7 @@ Fiz meu projeto com a linguagem que tenho mais conhecimento:.net 8
 
 - .net 8.0
 - nginx
-- postgresql
+- postgres
 
 ## Rodando o projeto
 
